@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="jQuery/jquery.js"></script>
+    <script src="jQuery/jquery-ui.min.js"></script>
+    <script src="jQuery/jquery.ui.datepicker-ru.js"></script>
+    <script src="Login.js"></script>
+    <link href="jQuery/jquery-ui.min.css" rel="stylesheet" />
+    <link href="CommonStyles.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="inputElem">
+        Выберите текущий статус:
+        <br/>
+        <select id="selStatus">
+            <option value="1">Всё работает штатно, работы по обновлению не ведутся</option>
+            <option value="2">Сервис недоступен, ведутся технические работы</option>
+            <option value="3">Сейчас всё работает штатно, но запланированы работы на дату: </option>
+        </select>
+    </div>
+    <div class="inputElem" id="dtMaintance"></div>
+    <div class="inputElem">
+        <button id="btnOK">Сохранить</button>
+    </div>
+    <script>
+        var SaveData = function () {
+            $.getJSON('SetStatus.ashx', { statusCode: $('#selStatus').val(), date: $('#dtMaintance').val() }, function (response) {
+                if (response.NeedAuth) Login(SaveData);
+
+            });
+
+        }
+        $('#selStatus').change(function (data) {
+            if ($('#selStatus').val() != "3")
+                $('#dtMaintance').hide();
+            else 
+                $('#dtMaintance').show();
+        });
+        $('#dtMaintance').datepicker({
+            dateFormat: 'yy-mm-dd'
+        });
+        $("#dtMaintance").datepicker($.datepicker.regional["ru"]);
+        $('#btnOK').click(function () {
+            SaveData();
+        })
+        $.getJSON('GetStatus.ashx', function (response) {
+            if (response.ErrorMessage) {
+                alert(response.ErrorMessage)
+                return;
+            }
+            $('#selStatus').val(response.Data.statusCode);
+            $('#dtMaintance').datepicker("setDate", response.Data.date)
+            if ($('#selStatus').val() != "3")
+                $('#dtMaintance').hide();
+        });
+    </script>
+</body>
+</html>
